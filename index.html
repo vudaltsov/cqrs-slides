@@ -16,7 +16,7 @@
             --r-block-margin: 10px;
         }
         .reveal pre {
-            font-size: .50em;
+            font-size: .60em;
         }
         .nohighlight {
             padding: 1em !important;
@@ -52,36 +52,47 @@
             width: calc(50% - var(--r-block-margin) * 2) !important;
         }
     </style>
-    <title>История одного CQRS</title>
+    <title>Нам уже нужен CQRS? А теперь?</title>
 </head>
 <body>
 <div class="reveal">
     <div class="slides">
         <section>
-            <h2>История одного CQRS</h2>
-        </section>
-
-        <section>
-            <p><img src="avatar.jpg" alt="" style="max-width: 300px;"></p>
-            <p>Валентин <a href="https://t.me/vudaltsov">@vudaltsov</a></p>
-            <p>
-                <a href="https://t.me/phpyh">Пых</a> /
-                <a href="https://youtube.com/@PHPPoint">PHP Point</a> /
-                <a href="https://t.me/isPHPdying">PHP умирает?!</a>
-            </p>
+            <h3>Нам уже нужен CQRS?<br>А теперь?</h3>
+            <img src="shrek.png" alt="" style="width: 60%">
+            <p><a href="https://t.me/vudaltsov">@vudaltsov</a></p>
         </section>
 
         <section>
             <h1>CQRS</h1>
-            <ul>
-                <li>Greg Young</li>
-                <li>Udi Dahan</li>
-            </ul>
         </section>
 
         <section>
-            <h1>Завязка</h1>
-            <p>Никит, ты ж программист...</p>
+            <div style="display: flex; align-items: center; justify-content: center">
+                <h3 style="text-align: left;">
+                    <span style="color: var(--r-link-color-hover);">C</span>ommand<br>
+                    <span style="color: var(--r-link-color-hover);">Q</span>uery<br>
+                    <span style="color: var(--r-link-color-hover);">R</span>esponsibility<br>
+                    <span style="color: var(--r-link-color-hover);">S</span>egregation
+                </h3>
+            </div>
+        </section>
+
+        <section>
+            <img src="greg_young.jpg" alt="" style="border-radius: 50%; width: 300px;">
+            <h3>Greg Young</h3>
+        </section>
+
+        <section>
+            <h2>CQRS ⇏ ES</h2>
+        </section>
+
+        <section>
+            <h2>Влад + Таня = ❤️</h2>
+        </section>
+
+        <section>
+            <h3>Влад, ты ж программист...</h3>
         </section>
 
         <section>
@@ -95,37 +106,506 @@
                     </ul>
                 </li>
                 <li>Витрина без корзины</li>
-                <li>Простая админка</li>
+                <li>Админка</li>
             </ul>
         </section>
 
         <section>
+            <h2>git commit -m Init</h2>
+        </section>
+
+        <section>
+            <div style="display: flex; align-items: center; justify-content: center">
+                <pre>
+                    <code class="language-sql" data-trim>
+                        create table product
+                        (
+                            product_id uuid           not null primary key,
+                            title      text           not null,
+                            price      numeric(12, 2) not null,
+                            quantity   integer        not null
+                        )
+                    </code>
+                </pre>
+            </div>
+        </section>
+
+        <section>
+            <iframe src="first/admin.html" width="500"></iframe>
+        </section>
+
+        <section>
+            <div style="display: flex; align-items: center; justify-content: center">
+                <div>
+                    <pre>
+                        <code class="language-sql" data-trim>
+                            insert into product (product_id, title, price, quantity)
+                            values (:product_id, :title, :price, :quantity)
+                        </code>
+                    </pre>
+                    <pre>
+                        <code class="language-sql" data-trim>
+                            update product
+                            set title    = :title,
+                                price    = :price,
+                                quantity = :quantity
+                            where product_id = :product_id
+                        </code>
+                    </pre>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <iframe src="first/shop.html" width="600"></iframe>
+        </section>
+
+        <section>
+            <div style="display: flex; align-items: center; justify-content: center">
+                <pre>
+                    <code class="language-sql" data-trim>
+                        select product_id, title, price, quantity
+                        from product
+                        where quantity > 0
+                    </code>
+                </pre>
+            </div>
+        </section>
+
+        <section>
+            <h2>Юзкейсы</h2>
+        </section>
+
+        <section>
+            <h3 style="margin-bottom: 60px;">Неколлаборативный<br> домен</h3>
+            <div style="display: flex; align-items: center; justify-content: center">
+                <div style="text-align: left;">
+                    <p>✅ CRUD UI</p>
+                    <p>✅ Write == Read</p>
+                    <p>❌ CQRS</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h1>Света</h1>
+        </section>
+
+        <section>
+            <h2>Влад, всё сломалось!</h2>
+        </section>
+
+        <section>
+            <div style="display: flex; align-items: center; justify-content: center">
+                <pre>
+                    <code class="language-sql" data-trim>
+                        -- 10:30 Света
+                        select ... from product where product_id = 'X'
+
+                        -- 10:31 Таня
+                        select ... from product where product_id = 'X'
+
+                        -- 10:32 Таня
+                        update product set ..., quantity = 100 where product_id = 'X'
+
+                        -- 10:34 Света
+                        update product set ..., quantity = 12 where product_id = 'X'
+                    </code>
+                </pre>
+            </div>
+        </section>
+
+        <section>
+            <div style="display: flex; align-items: center; justify-content: center">
+                <pre>
+                    <code class="language-sql" data-trim>
+                        alter table product add column version integer default 0
+                    </code>
+                </pre>
+            </div>
+        </section>
+
+        <section>
+            <div style="display: flex; align-items: center; justify-content: center">
+                <div>
+                    <pre>
+                        <code class="language-sql" data-trim>
+                            select ..., version
+                            from product
+                            where product_id = :product_id
+                        </code>
+                    </pre>
+                    <pre>
+                        <code class="language-html" data-trim>
+                            <form action="/admin/update">
+                                ...
+
+                                <input type="hidden" name="version" value="{{ version }}">
+                            </form>
+                        </code>
+                    </pre>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div style="display: flex; align-items: center; justify-content: center">
+                <pre>
+                    <code class="language-php" data-trim>
+                        function update(array $post): Response
+                        {
+                            $affectedRows = executeStatement(
+                                &lt;&lt;&lt;'SQL'
+                                    update product
+                                    set ...
+                                        version = version + 1
+                                    where product_id = :product_id
+                                      and version = :version
+                                    SQL,
+                                $post,
+                            );
+
+                            if ($affectedRows !== 1) {
+                                return render('form.twig', [
+                                    'error' => 'Кто-то уже поменял товар!',
+                                ], Response::HTTP_CONFLICT);
+                            }
+
+                            // ...
+                        }
+                    </code>
+                </pre>
+            </div>
+        </section>
+
+        <section>
+            <iframe src="second/admin.html" width="500"></iframe>
+        </section>
+
+        <section>
+            <div style="display: flex; align-items: center; justify-content: center">
+                <pre>
+                    <code class="language-sql" data-trim>
+                        select product_id, title, price, quantity
+                        from product
+                        where quantity > 0
+                    </code>
+                </pre>
+            </div>
+        </section>
+
+        <section>
+            <h1>2. Корзина</h1>
+        </section>
+
+        <section>
+            <iframe src="3_cart/shop.html" width="600"></iframe>
+        </section>
+
+        <section>
+            <iframe src="3_cart/checkout.html" width="600"></iframe>
+        </section>
+
+        <section>
+            <div style="display: flex; align-items: center; justify-content: center">
+                <pre>
+                    <code class="language-php" data-trim>
+                        #[Transactional]
+                        function checkout(Order $order): Response
+                        {
+                            foreach ($order->items as $item) {
+                                $product = executeQuery(
+                                    <<<'SQL'
+                                        select quantity, version
+                                        from product
+                                        where product_id = :product_id
+                                        SQL,
+                                    ['product_id' => $item->productId],
+                                )->fetch();
+
+                                $remainingQuantity = $product['quantity'] - $item->quantity;
+
+                                if ($remainingQuantity < 0) {
+                                    // Мало товара!
+                                }
+
+                                // ...
+                    </code>
+                </pre>
+            </div>
+        </section>
+
+        <section>
+            <div style="display: flex; align-items: center; justify-content: center">
+                <pre>
+                    <code class="language-php" data-trim>
+                                // ...
+
+                                $affectedRows = executeStatement(
+                                    <<<'SQL'
+                                        update product
+                                        set quantity = :remaining_quantity,
+                                            version = version + 1
+                                        where product_id = :product_id
+                                          and version = :version
+                                        SQL,
+                                    [
+                                        'product_id' => $item->productId,
+                                        'remaining_quantity' => $remainingQuantity,
+                                        'version' => $result['version'],
+                                    ],
+                                );
+
+                                // Проверяем $affectedRows
+                            }
+
+                            // ...
+                        }
+                    </code>
+                </pre>
+            </div>
+        </section>
+
+        <section>
+            <div style="display: flex; align-items: center; justify-content: center">
+                <pre>
+                    <code class="language-php" data-trim>
+                        foreach ($order->items as $item) {
+                            $remainingQuantity = executeQuery(
+                                <<<'SQL'
+                                    update product
+                                    set quantity = quantity - :requested_quantity,
+                                        version = version + 1
+                                    where product_id = :product_id
+                                    returning quantity as remaining_quantity
+                                    SQL,
+                                [
+                                    'product_id' => $item->productId,
+                                    'requested_quantity' => $item->quantity,
+                                ],
+                            )->fetchColumn();
+
+                            if ($remainingQuantity < 0) {
+                                // Мало товара!
+                            }
+
+                            // ...
+                        }
+                    </code>
+                </pre>
+            </div>
+        </section>
+
+        <section>
+            <iframe src="3_cart/checkout_error.html" width="600"></iframe>
+        </section>
+
+        <section>
+            <h2>Влад, всё сломалось!</h2>
+        </section>
+
+        <section>
             <table>
-                <tr><th colspan="4">product</th></tr>
                 <tr>
-                    <th>product_id</th>
-                    <th>name</th>
-                    <th>price</th>
-                    <th>quantity</th>
+                    <td>
+                        <pre style="font-size: 0.5em">
+                            <code class="language-sql" data-trim>
+                                update product
+                                set quantity = quantity - 2
+                                where product_id = 'Слон'
+                            </code>
+                        </pre>
+                    </td>
+                    <td></td>
                 </tr>
                 <tr>
-                    <td>1</td>
-                    <td>Книга</td>
-                    <td>300</td>
-                    <td>12</td>
+                    <td></td>
+                    <td>
+                        <pre style="font-size: 0.5em">
+                            <code class="language-sql" data-trim>
+                                update product
+                                set quantity = quantity - 1
+                                where product_id = 'Футболка'
+                            </code>
+                        </pre>
+                    </td>
                 </tr>
                 <tr>
-                    <td>1</td>
-                    <td>Карандаш</td>
-                    <td>10</td>
-                    <td>12</td>
+                    <td>
+                        <pre style="font-size: 0.5em">
+                            <code class="language-sql" data-trim>
+                                update product
+                                set quantity = quantity - 3
+                                where product_id = 'Футболка'
+
+                                -- Ожидаем разблокировки футболки
+                            </code>
+                        </pre>
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        <pre style="font-size: 0.5em">
+                            <code class="language-sql" data-trim>
+                                update product
+                                set quantity = quantity - 10
+                                where product_id = 'Слон'
+
+                                -- Ожидаем разблокировки слона
+                            </code>
+                        </pre>
+                    </td>
                 </tr>
             </table>
         </section>
 
         <section>
+            <h2>Deadlock!</h2>
+        </section>
+
+        <section>
+            <div style="display: flex; align-items: center; justify-content: center">
+                <pre>
+                    <code class="language-php" data-trim>
+                        #[Transactional]
+                        function checkout(Order $order): Response
+                        {
+                            $items = $order->items;
+                            usort(
+                                $items,
+                                static fn (Item $a, Item $b): int => $a->productId <=> $b->productId,
+                            );
+
+                            foreach ($items as $item) {
+                                // ...
+                            }
+
+                            // ...
+                        }
+                    </code>
+                </pre>
+            </div>
+        </section>
+
+        <section>
+            <table>
+                <tr>
+                    <td>
+                        <pre style="font-size: 0.5em">
+                            <code class="language-sql" data-trim>
+                                update product
+                                set quantity = quantity - 2
+                                where product_id = 'Слон'
+                            </code>
+                        </pre>
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        <pre style="font-size: 0.5em">
+                            <code class="language-sql" data-trim>
+                                update product
+                                set quantity = quantity - 10
+                                where product_id = 'Слон'
+
+                                -- Ожидаем разблокировки слона
+                            </code>
+                        </pre>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <pre style="font-size: 0.5em">
+                            <code class="language-sql" data-trim>
+                                update product
+                                set quantity = quantity - 3
+                                where product_id = 'Футболка'
+                            </code>
+                        </pre>
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        <pre style="font-size: 0.5em">
+                            <code class="language-sql" data-trim>
+                                -- Резервируем слона
+
+                                update product
+                                set quantity = quantity - 10
+                                where product_id = 'Футболка'
+                            </code>
+                        </pre>
+                    </td>
+                </tr>
+            </table>
+        </section>
+
+        <section>
+            <h1>3. Рост</h1>
+        </section>
+
+        <section>
+            <div style="display: flex; align-items: center; justify-content: center">
+                <pre>
+                    <code class="language-sql" data-trim>
+                        create table inventory
+                        (
+                            product_id uuid    not null primary key,
+                            quantity   integer not null
+                        );
+
+                        create table sales
+                        (
+                            product_id uuid           not null primary key,
+                            price      numeric(12, 2) not null
+                        );
+
+                        create table marketing
+                        (
+                            product_id uuid not null primary key,
+                            title      text not null
+                        );
+                    </code>
+                </pre>
+            </div>
+        </section>
+
+        <section>
+            <h3>Task-based UI в админке</h3>
+        </section>
+
+        <section>
+            <h3>Композиция стейта для чтения</h3>
+            <ul>
+                <li>БД (проекции)</li>
+                <li>Gateway</li>
+                <li>UI</li>
+            </ul>
+        </section>
+
+        <section>
+            <h3 style="margin-bottom: 60px;">Коллаборативный<br> домен</h3>
+            <div style="display: flex; align-items: center; justify-content: center">
+                <div style="text-align: left;">
+                    <p>❌ CRUD UI</p>
+                    <p>❌ Task-based UI</p>
+                    <p>✅ Write != Read, CQRS</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
             <h3>Полезные ссылки</h3>
             <ul>
+                <li><a href="#">TODO</a></li>
+                <li><a href="#">TODO</a></li>
+                <li><a href="#">TODO</a></li>
                 <li><a href="#">TODO</a></li>
             </ul>
         </section>
@@ -144,6 +624,7 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.0.4/reveal.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.0.4/plugin/highlight/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@iframe-resizer/parent"></script>
 <script>
     Reveal.initialize({
         controls: true,
@@ -153,6 +634,7 @@
         slideNumber: true,
         autoAnimate: true,
     });
+    iframeResize({license: 'GPLv3'}, 'iframe');
 </script>
 </body>
 </html>
